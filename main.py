@@ -76,65 +76,65 @@ def dashboard():
     return render_template('dashboard.html', name=user[0]['name'], position=employee[0]['job_id'][1],
                            work_email=employee[0]['work_email'], employee_id=employee[0]['id'])
 
-@app.route('/submit_attendance', methods=['POST'])
-def submit_attendance():
-    employee_id = request.form.get('employee_id')
-    x_studio_location = request.form.get('x_studio_location')
-    x_studio_check_out_location = request.form.get('x_studio_check_out_location')
-    check_in = request.form.get('check_in')
 
-    # Authenticate the user
-    url = 'http://arab-engineering-company.odoo.com'
-    db = 'arab-engineering-company'
-    username = 'haymouni@arab-engco.com'
-    password = 'Arab@2020'
+@app.route('/submit_attendance', methods=['GET', 'POST'])
+def attendance():
+    url = "http://arab-engineering-company.odoo.com"
+    db = "arab-engineering-company"
+    username = "haymouni@arab-engco.com"
+    password = "Arab@2020"
 
-    # Connect to the Odoo XML-RPC API
-    common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(url))
+    attendance_model = "hr.attendance"
+    employee_model = "hr.employee"
+
+    common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
     uid = common.authenticate(db, username, password, {})
-    models = xmlrpc.client.ServerProxy('{}/xmlrpc/2/object'.format(url))
+    models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object", allow_none=True)
+    if request.method == 'POST':
+        # Get form data
+        employee_id = request.form['employee_id']
+        check_in_str = request.form['datetime']
+        location = request.form['location']
 
-    # Convert the check_in string to a datetime object and localize it to the timezone you need
-    check_in_dt = datetime.fromisoformat(check_in).replace(tzinfo=pytz.timezone('Asia/Amman'))
+        # Check if employee exists
+        employee = models.execute_kw(db, uid, password, employee_model, 'search_read', [[['id', '=', employee_id]]])
+        if not employee:
+            return "Employee not found"
 
-    # Check if the employee has already checked in today
-    today = datetime.now(pytz.timezone('Asia/Amman')).strftime('%Y-%m-%d')
-    attendance_ids = models.execute_kw(db, uid, password, 'hr.attendance', 'search', [[
-        ('employee_id', '=', employee_id),
-        ('check_in', '>=', today),
-        ('check_out', '=', False)
-    ]])
+        # Create attendance record
+        check_in = datetime.strptime(request.form['datetime'], '%Y-%m-%dT%H:%M')
+        attendance = {
+            'employee_id': employee_id,
+            'check_in': check_in.strftime('%Y-%m-%d %H:%M:%S'),  # Convert datetime object to string in the expected format
+            'x_studio_location': location,
+        }
+        attendance_id = models.execute_kw(db, uid, password, attendance_model, 'create', [attendance])
 
-    if attendance_ids:
-        # The employee has already checked in today, update the corresponding record with check_out and check_out_location
-        attendance_id = attendance_ids[0]
-        try:
-            check_out_dt = datetime.now(pytz.timezone('Asia/Amman'))
-            models.execute_kw(db, uid, password, 'hr.attendance', 'write', [[attendance_id], {
-                'check_out': check_out_dt.strftime('%Y-%m-%d %H:%M:%S'),
-                'x_studio_check_out_location': x_studio_check_out_location
-            }])
-            flash('Your attendance has been submitted.')
-        except Exception as e:
-            flash(f"Failed to submit attendance: {e}")
-    else:
-        # The employee has not checked in yet today, create a new record
-        try:
-            attendance_id = models.execute_kw(db, uid, password, 'hr.attendance', 'create', [{
-                'employee_id': employee_id,
-                'check_in': check_in_dt.strftime('%Y-%m-%d %H:%M:%S'),
-                'x_studio_location': x_studio_location,
-            }])
-            flash('Your attendance has been submitted.')
-        except Exception as e:
-            flash(f"Failed to submit attendance: {e}")
+        return f"Attendance recorded for employee {employee[0]['name']}"
 
-    return '''
-        <script>
-            alert("Your attendance has been submitted.");
-            window.location.replace("/dashboard");
-        </script>
-    '''
+    return render_template('attendance_form.html')
+
+
+@app.route('/checkout/<int:attendance_id>', methods=['POST'])
+def checkout(attendance_id):
+    # Get attendance record
+    attendance = models.execute_kw(db, uid, password, attendance_model, 'search_read', [[['id', '=', attendance_id]]])
+    if not attendance:
+        return "Attendance record not found"
+    attendance = attendance[0]
+
+    # Update attendance record with check-out and location
+    check_out_str = request.form['datetime']
+    location = request.form['location']
+    check_out = datetime.strptime(request.form['datetime'], '%Y-%m-%dT%H:%M')
+
+    update = {
+        'check_out': check_out.strftime('%Y-%m-%d %H:%M:%S'),  # Convert datetime object to string in the expected format
+        'x_studio_check_out_location': location,
+    }
+    models.execute_kw(db, uid, password, attendance_model, 'write', [[attendance_id], update])
+
+    return "Attendance updated with check-out time and location"
 
 @app.route('/logout')
 def logout():

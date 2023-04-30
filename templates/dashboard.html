@@ -2,7 +2,6 @@
 <html>
 <head>
 	<title>Dashboard</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 	<header>
@@ -19,26 +18,31 @@
 		<p><small>Work Email: {{ work_email }}</small></p>
 		<p><small>Employee ID: {{ employee_id }}</small></p>
 		<h2>Attendance Record</h2>
-		<form method="POST" action="{{ url_for('submit_attendance') }}">
-			<div class="form-group">
-		    <label for="location">Related Employee</label>
-		    <input type="text" class="form-control" id="employee_id" name="employee_id" required value="{{ employee_id }}">
+		<form method="POST" action="{{ url_for('attendance') }}">
+		  <div class="form-group">
+			<label for="employee_id">Employee ID</label>
+			<input type="text" class="form-control" id="employee_id" name="employee_id" required value="{{ employee_id }}>
 		  </div>
 		  <div class="form-group">
-		    <label for="check_in">Check-In Time</label>
-		    <input type="datetime-local" class="form-control" id="check_in" name="check_in" required>
-		  </div>
-
-		  <div class="form-group">
-		    <label for="location">Location</label>
-		    <input type="text" class="form-control" id="location" name="x_studio_location" required>
+			<label for="datetime">Check-In Time</label>
+			<input type="datetime-local" class="form-control" id="datetime" name="datetime" required>
 		  </div>
 		  <div class="form-group">
-		    <label for="x_studio_check_out_location">Check-Out Location</label>
-		    <input type="text" class="form-control" id="x_studio_check_out_location" name="x_studio_check_out_location" required>
+			<label for="location">Check-In Location</label>
+			<input type="text" class="form-control" id="location" name="location" required>
 		  </div>
-		  <button type="submit" class="btn btn-primary">Submit</button>
+		  <button type="submit" class="btn btn-primary">Check In</button>
 		</form>
+		<form action="{{ url_for('checkout', attendance_id=attendance.id) }}" method="POST">
+  <label for="datetime">Check-out time:</label>
+  <input type="datetime-local" id="datetime" name="datetime" required>
+  <br>
+  <label for="location">Check-out location:</label>
+  <input type="text" id="location" name="location" required>
+  <br>
+  <input type="submit" value="Check-out">
+</form>
+
 	</div>
 </body>
 </html>
