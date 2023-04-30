@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>HR System Frontend</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<div class="container">
+		<img src="https://www.hst.jo/web/image/website/1/logo/Hamilton%20Smart%20Engineering?unique=0480bdf" width="150px" style="text-align:center;"/>
+		{% if error %}
+			<p class="error">{{ error }}</p>
+		{% endif %}
+		<br/>
+		<small style="text-align: center !important;">This is your HR System powered by Hamilton Tech. within the system everything is monitored and controled through location and IP Addresses</small>
+		<form action="{{ url_for('login') }}" method="post">
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username" required>
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required>
+			<input type="submit" value="Login">
+		</form>
+	</div>
+</body>
+</html>
+<style>
+	body {
+	background-color: #212121;
+	font-family: Arial, sans-serif;
+	color: #fff;
+}
+
+.container {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #424242;
+	border-radius: 10px;
+	box-shadow: 0 0 10px #333;
+}
+
+h1 {
+	margin-top: 0;
+	text-align: center;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+}
+
+label {
+	margin-top: 10px;
+}
+
+input {
+	padding: 10px;
+	margin-top: 5px;
+	border: none;
+	border-radius: 5px;
+	background-color: #333;
+	color: #fff;
+}
+
+input[type="submit"] {
+	background-color: #ed222f;
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+	background-color: #3e8e41;
+}
+.error {
+	color: red;
+	margin-top: 10px;
+	text-align: center;
+}
+</style>

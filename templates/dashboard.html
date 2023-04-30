@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Dashboard</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<header>
+		<div class="logo">
+			<img src="https://www.hst.jo/web/image/website/1/logo/Hamilton%20Smart%20Engineering?unique=0480bdf" alt="Logo">
+		</div>
+		<div class="nav">
+			<a href="{{ url_for('logout') }}">Logout</a>
+		</div>
+	</header>
+	<div class="container" style="text-align: center;">
+		<h1>Welcome, {{ name }}</h1>
+		<p><small>{{ position }}</small></p>
+		<p><small>Work Email: {{ work_email }}</small></p>
+		<p><small>Employee ID: {{ employee_id }}</small></p>
+		<h2>Attendance Record</h2>
+		<form method="POST" action="{{ url_for('submit_attendance') }}">
+			<div class="form-group">
+		    <label for="location">Related Employee</label>
+		    <input type="text" class="form-control" id="employee_id" name="employee_id" required value="{{ employee_id }}">
+		  </div>
+		  <div class="form-group">
+		    <label for="check_in">Check-In Time</label>
+		    <input type="datetime-local" class="form-control" id="check_in" name="check_in" required>
+		  </div>
+
+		  <div class="form-group">
+		    <label for="location">Location</label>
+		    <input type="text" class="form-control" id="location" name="x_studio_location" required>
+		  </div>
+		  <div class="form-group">
+		    <label for="x_studio_check_out_location">Check-Out Location</label>
+		    <input type="text" class="form-control" id="x_studio_check_out_location" name="x_studio_check_out_location" required>
+		  </div>
+		  <button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	</div>
+</body>
+</html>
+<script>
+const options = {timeZone: "Asia/Amman"};
+const now = new Date().toLocaleString("en-US", options);
+document.getElementById("check_in").value = now.slice(0, 16);
+
+// set default value to current date and time
+const date = new Date();
+const year = date.getFullYear();
+const month = String(date.getMonth() + 1).padStart(2, '0');
+const day = String(date.getDate()).padStart(2, '0');
+const hour = String(date.getHours()).padStart(2, '0');
+const minute = String(date.getMinutes()).padStart(2, '0');
+document.getElementById("check_in").value = `${year}-${month}-${day}T${hour}:${minute}`;
+
+if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition(position => {
+    const { latitude, longitude } = position.coords;
+    const location = `${latitude},${longitude}`;
+    document.getElementById("location").value = location;
+  });
+}
+
+var user = JSON.parse(localStorage.getItem('user'));
+if (user) {
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('name').innerHTML = user.name;
+    document.getElementById('position').innerHTML = user.position;
+    document.getElementById('work_email').innerHTML = user.work_email;
+    document.getElementById('employee_id').innerHTML = user.employee_id;
+} else {
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login').style.display = 'block';
+}
+
+</script>
+
+
+<style>
+	body {
+	background-color: #212121;
+	font-family: Arial, sans-serif;
+	color: #fff;
+	margin: 0;
+	padding: 0;
+}
+
+header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #424242;
+	padding: 10px 20px;
+}
+
+.logo img {
+	height: 50px;
+}
+
+.nav a {
+	color: #fff;
+	text-decoration: none;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: #ed222f;
+	transition: background-color 0.3s ease;
+}
+
+.nav a:hover {
+	background-color: #3e8e41;
+}
+
+.container {
+	max-width: 800px;
+	margin: 50px auto;
+	padding: 20px;
+	background-color: #424242;
+	border-radius: 10px;
+	box-shadow: 0 0 10px #333;
+}
+
+h1 {
+	margin-top: 0;
+	text-align: center;
+}
+
+p {
+	margin-top: 20px;
+	font-size: 18px;
+	text-align: center;
+}
+
+@media only screen and (max-width: 600px) {
+	.container {
+		max-width: 400px;
+		margin: 20px auto;
+		padding: 10px;
+	}
+
+	h1 {
+		font-size: 24px;
+	}
+
+	p {
+		font-size: 16px;
+	}
+}
+
+@media only screen and (max-width: 400px) {
+	.logo img {
+		height: 40px;
+	}
+
+	.nav a {
+		padding: 5px;
+		font-size: 12px;
+	}
+
+	.container {
+		max-width: 300px;
+		margin: 10px auto;
+		padding: 5px;
+	}
+
+	h1 {
+		font-size: 20px;
+	}
+
+	p {
+		font-size: 14px;
+	}
+}
+</style>
